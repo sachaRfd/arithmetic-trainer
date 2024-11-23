@@ -8,7 +8,8 @@ A simple Arithmetic application that helps you practice multiplication by random
 
 ```bash
 conda env create -f env.yml
-conda activate arithmetic_trainer
+conda activate trainer
+pip install .
 ```
 
 2. To run the trainer, use:
@@ -24,6 +25,7 @@ python trainer.py
 
 ## Future Features: 
 
-- Include Additions, Substractions, Divisions
-- Include Fractions, Percentages. 
+- Include Additions, Substractions, Divisions, Fractions, Percentages. 
+
+
 

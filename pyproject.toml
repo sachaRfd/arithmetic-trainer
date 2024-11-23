@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Arithmetic-Trainer"
+version = "0.1.0"
+description = "Train your multiplications, divisions and many more."
+authors = [
+    {name = "Sacha Raffaud"},
+]
+requires-python = ">=3.7"
+dependencies = [
+    "numpy",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = {find = {where = ["src"]}}
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.rst"]

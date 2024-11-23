@@ -1,5 +1,5 @@
 import tkinter as tk
-from utils import generate_random_nums, format_equation
+from src.utils import generate_random_nums, format_equation
 import time
 
 
@@ -122,7 +122,7 @@ class MathQuizApp:
                 # Clear input box after each attempt
                 self.entry.delete(0, tk.END)
         except ValueError:
-            self.label.config(text="Please enter a valid number.")
+            self.label.config(text="Enter a valid number.")
             self.root.after(500, self.reset_label)
             # Clear input box after each attempt
             self.entry.delete(0, tk.END)
@@ -216,7 +216,3 @@ def main():
     app = MathQuizApp(root)
     # Run the GUI main loop
     root.mainloop()
-
-
-if __name__ == "__main__":
-    main()
