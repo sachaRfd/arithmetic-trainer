@@ -25,6 +25,7 @@ python trainer.py
 
 ## Future Features: 
 
+- Choose range of numbers to use in equations.
 - Include Additions, Substractions, Divisions, Fractions, Percentages. 
 
 

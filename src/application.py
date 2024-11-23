@@ -193,7 +193,7 @@ class MathQuizApp:
             label.pack()
 
 
-def main():
+def train():
     # Create the main window
     root = tk.Tk()
 

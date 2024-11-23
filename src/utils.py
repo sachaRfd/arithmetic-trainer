@@ -1,5 +1,5 @@
 import numpy as np
-
+import time
 
 def generate_random_nums(low: int = 2, high: int = 10, num_factors: int = 2):
     """
@@ -13,6 +13,8 @@ def generate_random_nums(low: int = 2, high: int = 10, num_factors: int = 2):
     Returns:
         tuple: A tuple containing the random integers and their product.
     """
+    np.random.seed(int(time.time() * 1000) % (2**32))  # Get time-based seed to improve randomness
+
     random_nums = np.random.randint(low=low, high=high, size=(num_factors))
     return random_nums, np.prod(random_nums)
 
