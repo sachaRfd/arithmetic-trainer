@@ -1,24 +1,116 @@
 import tkinter as tk
+from tkinter import messagebox
 from src.utils import generate_random_nums, format_equation
 import time
 
 
+class SettingsWindow:
+    def __init__(self):
+        self.settings_root = tk.Tk()
+        self.settings_root.title("Math Quiz Settings")
+
+        # Set window size and position
+        window_width = 300
+        window_height = 200
+        screen_width = self.settings_root.winfo_screenwidth()
+        screen_height = self.settings_root.winfo_screenheight()
+        position_top = int((screen_height - window_height) / 2)
+        position_left = int((screen_width - window_width) / 2)
+        self.settings_root.geometry(
+            f"{window_width}x{window_height}+{position_left}+{position_top}"
+        )
+
+        # Variables to store settings
+        self.low_var = tk.StringVar(value="2")
+        self.high_var = tk.StringVar(value="10")
+        self.settings = None
+
+        self.create_settings_widgets()
+
+    def create_settings_widgets(self):
+        # Title
+        title_label = tk.Label(
+            self.settings_root, text="Quiz Settings", font=("Arial", 16, "bold")
+        )
+        title_label.pack(pady=10)
+
+        # Frame for number range settings
+        settings_frame = tk.Frame(self.settings_root)
+        settings_frame.pack(pady=10)
+
+        # Lowest number setting
+        low_label = tk.Label(settings_frame, text="Lowest number:", font=("Arial", 12))
+        low_label.grid(row=0, column=0, padx=5, pady=5)
+
+        low_entry = tk.Entry(settings_frame, textvariable=self.low_var, width=10)
+        low_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        # Highest number setting
+        high_label = tk.Label(
+            settings_frame, text="Highest number:", font=("Arial", 12)
+        )
+        high_label.grid(row=1, column=0, padx=5, pady=5)
+
+        high_entry = tk.Entry(settings_frame, textvariable=self.high_var, width=10)
+        high_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        # Start button
+        start_button = tk.Button(
+            self.settings_root,
+            text="Start Quiz",
+            command=self.start_quiz,
+            font=("Arial", 12),
+            width=15,
+        )
+        start_button.pack(pady=20)
+
+    def validate_settings(self):
+        try:
+            low = int(self.low_var.get())
+            high = int(self.high_var.get())
+
+            if low < 1:
+                messagebox.showerror("Error", "Lowest number must be at least 1")
+                return False
+            if high <= low:
+                messagebox.showerror(
+                    "Error", "Highest number must be greater than lowest number"
+                )
+                return False
+            return True
+        except ValueError:
+            messagebox.showerror("Error", "Please enter valid numbers")
+            return False
+
+    def start_quiz(self):
+        if self.validate_settings():
+            self.settings = {
+                "low": int(self.low_var.get()),
+                "high": int(self.high_var.get()),
+            }
+            self.settings_root.destroy()
+
+    def get_settings(self):
+        self.settings_root.mainloop()
+        return self.settings
+
+
 class MathQuizApp:
-    def __init__(self, root):
+    def __init__(self, root, settings):
         self.root = root
         self.root.title("Math Quiz")
 
-        # Default settings
-        self.low = 2
-        self.max_num = 10
+        # Use settings from SettingsWindow
+        self.low = settings["low"]
+        self.max_num = settings["high"]
         self.num_factors = 2
 
-        # Initialize counters:
+        # Initialize counters
         self.correct_answers = 0
-        self.answer_times = []  # List to store times for each question
-        self.quick_answers = []  # Store quick answers (answered quickly)
-        self.slow_answers = []  # Store slow answers (answered slowly)
-        self.incorrect_answers = []  # Store incorrect answers (answered wrong)
+        self.answer_times = []
+        self.quick_answers = []
+        self.slow_answers = []
+        self.incorrect_answers = []
 
         # Ensure at least 2 numbers for multiplication
         assert self.num_factors > 1, "Need to multiply at least 2 numbers!"
@@ -36,8 +128,8 @@ class MathQuizApp:
 
         # Initialize start_time as None initially
         self.start_time = None
-        self.first_question = True  # Flag to check if it's the first question
-        self.timer_start_time = time.time()  # Start the global timer for the app
+        self.first_question = True
+        self.timer_start_time = time.time()
 
         # Set initial countdown time (5 minutes = 300 seconds)
         self.countdown_time = 300
@@ -194,10 +286,18 @@ class MathQuizApp:
 
 
 def train():
+    # First show settings window
+    settings_window = SettingsWindow()
+    settings = settings_window.get_settings()
+
+    # If settings window was closed without clicking Start Quiz
+    if settings is None:
+        return
+
     # Create the main window
     root = tk.Tk()
 
-    # Set structure:
+    # Set structure
     window_width = 600
     window_height = 400
     root.geometry(f"{window_width}x{window_height}")
@@ -212,7 +312,7 @@ def train():
     # Set the window position to the center of the screen
     root.geometry(f"{window_width}x{window_height}+{position_left}+{position_top}")
 
-    # Instantiate the MathQuizApp class
-    app = MathQuizApp(root)
+    # Instantiate the MathQuizApp class with settings
+    app = MathQuizApp(root, settings)
     # Run the GUI main loop
     root.mainloop()

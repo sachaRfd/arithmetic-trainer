@@ -10,7 +10,7 @@ A simple Arithmetic application that helps you practice multiplication by random
 https://github.com/sachaRfd/arithmetic-trainer.git
 conda env create -f env.yml
 conda activate trainer
-pip install .
+pip install -e .
 ```
 
 2. To run the trainer, use:
