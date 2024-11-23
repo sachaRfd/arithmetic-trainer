@@ -7,7 +7,7 @@ name = "Arithmetic-Trainer"
 version = "0.1.0"
 description = "Train your multiplications, divisions and many more."
 authors = [
-    {name = "Sacha Raffaud"},
+    {name = "sachaRfd"},
 ]
 requires-python = ">=3.7"
 dependencies = [
