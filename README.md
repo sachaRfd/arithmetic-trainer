@@ -4,9 +4,10 @@ A simple Arithmetic application that helps you practice multiplication by random
 
 ## Installation
 
-1. Download the environment with:
+1. Setup the environment and program:
 
 ```bash
+https://github.com/sachaRfd/arithmetic-trainer.git
 conda env create -f env.yml
 conda activate trainer
 pip install .
