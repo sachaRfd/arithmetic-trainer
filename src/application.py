@@ -279,7 +279,7 @@ class MathQuizApp:
         self.correct_answers = 0
         self.incorrect_answers = []
         self.total_questions = 0
-        self.countdown_time = 10
+        self.countdown_time = 300
         self.update_timer()  # Update the timer if necessary
         self.show_input()  # Display the input for the first question
         self.counter_label.config(text=f"Correct answers: {self.correct_answers}")
