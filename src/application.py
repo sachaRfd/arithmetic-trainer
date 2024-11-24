@@ -86,7 +86,7 @@ class SettingsWindow:
         if self.validate_settings():
             self.settings = {
                 "low": int(self.low_var.get()),
-                "high": int(self.high_var.get()),
+                "high": int(self.high_var.get()) + 1,  # 0-indexed :)
             }
             self.settings_root.destroy()
 
@@ -107,10 +107,8 @@ class MathQuizApp:
 
         # Initialize counters
         self.correct_answers = 0
-        self.answer_times = []
-        self.quick_answers = []
-        self.slow_answers = []
         self.incorrect_answers = []
+        self.total_questions = 0
 
         # Ensure at least 2 numbers for multiplication
         assert self.num_factors > 1, "Need to multiply at least 2 numbers!"
@@ -131,13 +129,12 @@ class MathQuizApp:
         self.first_question = True
         self.timer_start_time = time.time()
 
-        # Set initial countdown time (5 minutes = 300 seconds)
         self.countdown_time = 300
         self.update_timer()
 
     def create_widgets(self):
         # Timer label (top-left corner)
-        self.timer_label = tk.Label(self.root, text="Time: 5:00", font=("Arial", 14))
+        self.timer_label = tk.Label(self.root, text="Time: 10:00", font=("Arial", 14))
         self.timer_label.place(x=10, y=10)
 
         # Counter label for correct answers (top-right corner)
@@ -178,6 +175,7 @@ class MathQuizApp:
             self.root.after(1000, self.update_timer)
         else:
             self.timer_label.config(text="Time's up!")
+            self.show_results()  # Automatically show results when time is up
 
     def check_answer(self, event):
         try:
@@ -190,29 +188,21 @@ class MathQuizApp:
 
             # Get user input and validate
             prediction = float(self.entry.get())
+            self.total_questions += 1
+
             if prediction == self.answer:
                 self.correct_answers += 1
                 self.counter_label.config(
                     text=f"Correct answers: {self.correct_answers}"
                 )
 
-                # Calculate time taken for this answer
-                time_taken = time.time() - self.start_time
-                if time_taken < 5:  # Quick answer
-                    self.quick_answers.append((self.input_str, time_taken))
-                else:  # Slow answer
-                    self.slow_answers.append((self.input_str, time_taken))
-
-                self.next_question()
             else:
                 self.incorrect_answers.append(
                     (self.input_str, self.answer)
                 )  # Store incorrect answers
-                self.label.config(text="Wrong! Try again.")
-                # After 0.5 seconds, revert to the original equation
-                self.root.after(500, self.reset_label)
-                # Clear input box after each attempt
-                self.entry.delete(0, tk.END)
+
+            self.next_question()
+
         except ValueError:
             self.label.config(text="Enter a valid number.")
             self.root.after(500, self.reset_label)
@@ -242,47 +232,57 @@ class MathQuizApp:
         self.start_time = time.time()  # Start timing for the next question
 
     def show_results(self):
+        # Calculate the percentage of correct answers
+        if self.total_questions > 0:
+            correct_percentage = (self.correct_answers / self.total_questions) * 100
+        else:
+            correct_percentage = 0
+
         # Display results for quick and slow answers
         result_window = tk.Toplevel(self.root)
-        result_window.title("Answer Times")
+        result_window.title("Results")
 
-        quick_frame = tk.LabelFrame(
-            result_window, text="Quick Answers", font=("Arial", 12)
+        results_label = tk.Label(
+            result_window,
+            text=f"Total Questions: {self.total_questions}\n"
+            f"Correct Answers: {self.correct_answers}\n"
+            f"Percentage: {correct_percentage:.2f}%",
+            font=("Arial", 14),
         )
-        quick_frame.pack(pady=10, padx=10)
-
-        slow_frame = tk.LabelFrame(
-            result_window, text="Slow Answers", font=("Arial", 12)
-        )
-        slow_frame.pack(pady=10, padx=10)
+        results_label.pack(pady=20)
 
         incorrect_frame = tk.LabelFrame(
-            result_window, text="Incorrect Answers", font=("Arial", 12)
+            result_window, text="Incorrect Answers", padx=10, pady=10
         )
-        incorrect_frame.pack(pady=10, padx=10)
+        incorrect_frame.pack(pady=10)
 
-        # Display quick answers
-        for eq, time_taken in self.quick_answers:
-            label = tk.Label(
-                quick_frame, text=f"{eq} - Time: {time_taken:.2f}s", font=("Arial", 10)
+        for eq, ans in self.incorrect_answers:
+            incorrect_label = tk.Label(
+                incorrect_frame, text=f"{eq} = {ans}", font=("Arial", 12)
             )
-            label.pack()
+            incorrect_label.pack()
 
-        # Display slow answers
-        for eq, time_taken in self.slow_answers:
-            label = tk.Label(
-                slow_frame, text=f"{eq} - Time: {time_taken:.2f}s", font=("Arial", 10)
-            )
-            label.pack()
+        retry_button = tk.Button(
+            result_window,
+            text="Retry",
+            font=("Arial", 14),
+            command=lambda: self.retry_del(result_window),  # Pass result_window safely
+        )
+        retry_button.pack(pady=20)
 
-        # Display incorrect answers
-        for eq, correct_answer in self.incorrect_answers:
-            label = tk.Label(
-                incorrect_frame,
-                text=f"{eq} - Correct Answer: {correct_answer}",
-                font=("Arial", 10),
-            )
-            label.pack()
+    def retry_del(self, result_window):
+        # Ensure the window is not already destroyed
+        if result_window.winfo_exists():
+            result_window.destroy()  # Destroy the result window safely
+
+        # Reset the application to retry the quiz
+        self.correct_answers = 0
+        self.incorrect_answers = []
+        self.total_questions = 0
+        self.countdown_time = 10
+        self.update_timer()  # Update the timer if necessary
+        self.show_input()  # Display the input for the first question
+        self.counter_label.config(text=f"Correct answers: {self.correct_answers}")
 
 
 def train():
