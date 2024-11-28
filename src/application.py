@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from src.utils import generate_random_nums, format_equation
+from src.utils import generate_sample
 import time
 
 
@@ -11,7 +11,7 @@ class SettingsWindow:
 
         # Set window size and position
         window_width = 300
-        window_height = 200
+        window_height = 300
         screen_width = self.settings_root.winfo_screenwidth()
         screen_height = self.settings_root.winfo_screenheight()
         position_top = int((screen_height - window_height) / 2)
@@ -23,6 +23,8 @@ class SettingsWindow:
         # Variables to store settings
         self.low_var = tk.StringVar(value="2")
         self.high_var = tk.StringVar(value="10")
+        self.num_factors = tk.StringVar(value="2")
+        self.include_divisions = tk.BooleanVar(value=False)
         self.settings = None
 
         self.create_settings_widgets()
@@ -54,6 +56,28 @@ class SettingsWindow:
         high_entry = tk.Entry(settings_frame, textvariable=self.high_var, width=10)
         high_entry.grid(row=1, column=1, padx=5, pady=5)
 
+        # Number of factor setting:
+        num_factors = tk.Label(
+            settings_frame, text="Number of Factors:", font=("Arial", 12)
+        )
+        num_factors.grid(row=2, column=0, padx=5, pady=5)
+
+        num_factors_entry = tk.Entry(
+            settings_frame, textvariable=self.num_factors, width=10
+        )
+        num_factors_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        # Use division setting:
+        include_division = tk.Label(
+            settings_frame, text="Include Divisions", font=("Arial", 12)
+        )
+        include_division.grid(row=3, column=0, padx=5, pady=5)
+
+        division_entry = tk.Checkbutton(
+            settings_frame, variable=self.include_divisions, width=10
+        )
+        division_entry.grid(row=3, column=1, padx=5, pady=5)
+
         # Start button
         start_button = tk.Button(
             self.settings_root,
@@ -68,6 +92,12 @@ class SettingsWindow:
         try:
             low = int(self.low_var.get())
             high = int(self.high_var.get())
+            num_factors = int(self.num_factors.get())
+            use_division = bool(self.include_divisions.get())
+
+            if use_division and num_factors > 2:
+                messagebox.showerror("Error", "Divisions require 2 factors.")
+                return False
 
             if low < 1:
                 messagebox.showerror("Error", "Lowest number must be at least 1")
@@ -77,6 +107,15 @@ class SettingsWindow:
                     "Error", "Highest number must be greater than lowest number"
                 )
                 return False
+
+            if num_factors < 2:
+                messagebox.showerror("Error", "Minimum number of factors is 2")
+                return False
+
+            if num_factors > 4:
+                messagebox.showerror("Error", "Maximum number of factors ATM is 3")
+                return False
+
             return True
         except ValueError:
             messagebox.showerror("Error", "Please enter valid numbers")
@@ -87,6 +126,8 @@ class SettingsWindow:
             self.settings = {
                 "low": int(self.low_var.get()),
                 "high": int(self.high_var.get()) + 1,  # 0-indexed :)
+                "use_divisions": bool(self.include_divisions.get()),
+                "num_factors": int(self.num_factors.get()),
             }
             self.settings_root.destroy()
 
@@ -103,7 +144,8 @@ class MathQuizApp:
         # Use settings from SettingsWindow
         self.low = settings["low"]
         self.max_num = settings["high"]
-        self.num_factors = 2
+        self.use_divisions = settings["use_divisions"]
+        self.num_factors = settings["num_factors"]
 
         # Initialize counters
         self.correct_answers = 0
@@ -114,12 +156,12 @@ class MathQuizApp:
         assert self.num_factors > 1, "Need to multiply at least 2 numbers!"
 
         # Generate random numbers and their product
-        self.random_nums, self.answer = generate_random_nums(
-            low=self.low, high=self.max_num, num_factors=self.num_factors
+        self.answer, self.input_str = generate_sample(
+            low=self.low,
+            high=self.max_num,
+            num_factors=self.num_factors,
+            use_division=self.use_divisions,
         )
-
-        # Generate the equation string
-        self.input_str = format_equation(self.random_nums)
 
         # Set up the UI elements
         self.create_widgets()
@@ -220,10 +262,12 @@ class MathQuizApp:
 
     def show_input(self):
         # Generate new random numbers and update the equation
-        self.random_nums, self.answer = generate_random_nums(
-            low=self.low, high=self.max_num, num_factors=self.num_factors
+        self.answer, self.input_str = generate_sample(
+            low=self.low,
+            high=self.max_num,
+            num_factors=self.num_factors,
+            use_division=self.use_divisions,
         )
-        self.input_str = format_equation(self.random_nums)
         self.label.config(text=self.input_str)  # Update the equation display
         self.entry.pack(pady=10)  # Show the entry widget for the next question
         self.entry.delete(0, tk.END)  # Clear the entry widget
